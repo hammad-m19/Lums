@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "373337511878",
+    "project_id": "lums-photo-2026",
+    "storage_bucket": "lums-photo-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373337511878:android:159b5b95e632c4de18c4c7",
+        "android_client_info": {
+          "package_name": "com.example.lums"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCd1akZ8cM3H2qTulpgMHa5uxVnDoz3dOY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

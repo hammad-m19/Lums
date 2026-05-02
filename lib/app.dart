@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
+import 'firebase_options.dart';
 import 'screens/home_screen.dart';
 import 'services/album_repository.dart';
 import 'services/image_processing_service.dart';
@@ -14,10 +16,16 @@ class SnapGatherApp extends StatefulWidget {
 }
 
 class _SnapGatherAppState extends State<SnapGatherApp> {
-  late final Future<_AppServices> _bootstrap = _initialize();
+  late final bool _isWindows =
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.windows;
+  late final Future<_AppServices>? _bootstrap = _isWindows
+      ? null
+      : _initialize();
 
   Future<_AppServices> _initialize() async {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
     final repository = AlbumRepository(
       imageProcessingService: ImageProcessingService(),
@@ -68,25 +76,27 @@ class _SnapGatherAppState extends State<SnapGatherApp> {
       title: 'SnapGather',
       debugShowCheckedModeBanner: false,
       theme: baseTheme,
-      home: FutureBuilder<_AppServices>(
-        future: _bootstrap,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const _LoadingScreen();
-          }
+      home: _isWindows
+          ? const _UnsupportedWindowsScreen()
+          : FutureBuilder<_AppServices>(
+              future: _bootstrap,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState != ConnectionState.done) {
+                  return const _LoadingScreen();
+                }
 
-          if (snapshot.hasError) {
-            return _FirebaseSetupScreen(error: snapshot.error.toString());
-          }
+                if (snapshot.hasError) {
+                  return _FirebaseSetupScreen(error: snapshot.error.toString());
+                }
 
-          final services = snapshot.requireData;
+                final services = snapshot.requireData;
 
-          return HomeScreen(
-            repository: services.repository,
-            uploadQueue: services.uploadQueue,
-          );
-        },
-      ),
+                return HomeScreen(
+                  repository: services.repository,
+                  uploadQueue: services.uploadQueue,
+                );
+              },
+            ),
     );
   }
 }
@@ -132,6 +142,38 @@ class _FirebaseSetupScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             SelectableText(error, style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _UnsupportedWindowsScreen extends StatelessWidget {
+  const _UnsupportedWindowsScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('SnapGather')),
+      body: const Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Windows preview mode',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'This build is configured for Android/iOS Firebase flows '
+              '(camera + Storage + Firestore).',
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Run on Android/iOS (or web with proper web setup) to use full functionality.',
+            ),
           ],
         ),
       ),
